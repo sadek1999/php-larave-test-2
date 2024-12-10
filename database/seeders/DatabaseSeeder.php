@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Enum\PermissionEnum;
 use App\Enum\RolesEnum;
+use App\Models\Feature;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -46,6 +47,6 @@ class DatabaseSeeder extends Seeder
             'email' => 'commenter@example.com',
         ])->assignRole($commenterRole);
 
-        // Feature::factory(20)->create();
+        Feature::factory(20)->create();
     }
 }
