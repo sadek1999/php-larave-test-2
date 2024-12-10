@@ -6,6 +6,7 @@ use App\Http\Resources\FeatureResource;
 use App\Models\Feature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 
 class FeatureController extends Controller
@@ -15,10 +16,25 @@ class FeatureController extends Controller
      */
     public function index()
     {
-        $data=Feature::latest()->paginate();
+        $currentUserId=Auth::id();
+        $data = Feature::latest()
+            ->withCount(['upvote as upvote_count' => function ($query) {
+                $query->select(DB::raw('SUM(CASE WHEN upvote = 1 THEN 1 ELSE -1 END)'));
+            }])
+            ->withExists([
+                'upvote as user_has_upvoted' => function ($query) use ($currentUserId) {
+                    $query->where('user_id', $currentUserId)
+                        ->where('upvote', 1);
+                },
+                'upvote as user_has_downvoted' => function ($query) use ($currentUserId) {
+                    $query->where('user_id', $currentUserId)
+                        ->where('upvote', 0);
+                }
+            ])
+            ->paginate();
 
-        return Inertia::render('Feature/index',[
-            'features'=>FeatureResource::collection($data)
+        return Inertia::render('Feature/index', [
+            'features' => FeatureResource::collection($data)
         ]);
     }
 
@@ -35,13 +51,13 @@ class FeatureController extends Controller
      */
     public function store(Request $request)
     {
-        $data=$request->validate([
-            'name'=>'string|required',
-               'description'=>'string'
+        $data = $request->validate([
+            'name' => 'string|required',
+            'description' => 'string'
         ]);
-        $data['user_id']=Auth::id();
+        $data['user_id'] = Auth::id();
         Feature::create($data);
-        return to_route('feature.index')->with('success','successfully create feature');
+        return to_route('feature.index')->with('success', 'successfully create feature');
     }
 
     /**
@@ -49,9 +65,9 @@ class FeatureController extends Controller
      */
     public function show(Feature $feature)
     {
-        return Inertia::render('Feature/show',[
-            'feature'=>new FeatureResource($feature)
-        ]) ;
+        return Inertia::render('Feature/show', [
+            'feature' => new FeatureResource($feature)
+        ]);
     }
 
     /**
@@ -59,8 +75,8 @@ class FeatureController extends Controller
      */
     public function edit(Feature $feature)
     {
-        return Inertia::render('Feature/edit',[
-            'feature'=>new FeatureResource($feature)
+        return Inertia::render('Feature/edit', [
+            'feature' => new FeatureResource($feature)
         ]);
     }
 
@@ -70,13 +86,13 @@ class FeatureController extends Controller
     public function update(Request $request, Feature $feature)
     {
         //
-        $validateData=$request->validate([
-            'name'=>'string|required',
-            'description'=>'string'
+        $validateData = $request->validate([
+            'name' => 'string|required',
+            'description' => 'string'
         ]);
-        $featureId=$feature->id;
+        $featureId = $feature->id;
         $feature->update($validateData);
-        return to_route('feature.show',$featureId);
+        return to_route('feature.show', $featureId);
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\User;
+
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,7 +21,9 @@ class FeatureResource extends JsonResource
             'description'=>$this->description,
             'user'=>new userResource($this->user),
             'upvoteCount'=>$this->upvoteCount?:0,
-            'created_at'=>$this->created_at,
+            'created_at'=>$this->created_at->format('Y-m-d H:i:s'),
+            'user_has_upvote'=>(bool)$this->user_has_upvote,
+            'user_has_downvote'=>(bool)$this->user_has_downvote,
         ];
     }
 }

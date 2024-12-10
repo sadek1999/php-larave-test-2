@@ -1,10 +1,13 @@
+import AuthLayout from '@/Layouts/AuthLayout';
+import { TFeature, TPaginateData } from '@/types';
 import React from 'react';
 
-const index = () => {
+const index = ({features}:{features:TPaginateData<TFeature>}) => {
+    console.log(features)
     return (
-        <div>
-
-        </div>
+       <AuthLayout>
+        <p>This is index page .............</p>
+       </AuthLayout>
     );
 };
 
